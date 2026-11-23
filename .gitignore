@@ -2,3 +2,4 @@ downloads/
 backups/
 .history/
 .env
+build/
