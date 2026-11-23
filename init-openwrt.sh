@@ -114,6 +114,25 @@ if [ -x /etc/openclash/core/clash_meta ]; then
     [ -n "${CORE_VERSION}" ] && log "Mihomo core: ${CORE_VERSION}"
 fi
 
+# /etc/rc.d lives in the container writable layer, so re-enable OpenClash
+# autostart on every boot. Without this the Mihomo core (and therefore the
+# metacubexd dashboard on port 9090) stays down after a container restart.
+if [ -x /etc/init.d/openclash ]; then
+    # procd helpers need /var/lock, but this script runs before /sbin/init
+    # creates it. Without the directory `enable` exits 1 and silently writes
+    # no rc.d symlink, so OpenClash would stay down after every restart.
+    mkdir -p /var/lock
+    /etc/init.d/openclash enable >/dev/null 2>&1 || true
+    if [ ! -e /etc/rc.d/S99openclash ]; then
+        ln -sf ../init.d/openclash /etc/rc.d/S99openclash
+    fi
+    if [ -e /etc/rc.d/S99openclash ]; then
+        log "OpenClash autostart: enabled"
+    else
+        log "WARNING: could not enable OpenClash autostart"
+    fi
+fi
+
 log "IP       : ${OWRT_IP}"
 log "Gateway  : ${OWRT_GATEWAY}"
 log "DHCP     : disabled"

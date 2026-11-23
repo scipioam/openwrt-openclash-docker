@@ -106,8 +106,8 @@ The build script also uses common tools such as `curl`, `sha256sum`, `awk`, `sed
 The repository ships with `.env.example`, which contains example values similar to:
 
 ```dotenv
-OPENWRT_VERSION=25.12.5
-OPENCLASH_VERSION=0.47.156
+OPENWRT_VERSION=25.12.6
+OPENCLASH_VERSION=0.48.002
 
 OPENWRT_IP=192.168.0.250
 OPENWRT_GATEWAY=192.168.0.1
@@ -256,8 +256,8 @@ The script:
 Typical image names:
 
 ```text
-local-openwrt-base:25.12.5
-local-openwrt:25.12.5-oc0.47.156
+local-openwrt-base:25.12.6
+local-openwrt:25.12.6-oc0.48.002
 ```
 
 The script **does not recreate the running container**.
@@ -417,8 +417,8 @@ Select explicit versions:
 
 ```bash
 ./update-openwrt-image.sh \
-  --openwrt 25.12.5 \
-  --openclash 0.47.156
+  --openwrt 25.12.6 \
+  --openclash 0.48.002
 ```
 
 Force-rebuild an existing final image tag:
@@ -527,6 +527,16 @@ OpenClash version   -> rebuild image
 Mihomo core         -> update persistent OpenClash data
 Profiles/providers  -> persistent OpenClash data
 ```
+
+### OpenClash autostart
+
+`/etc/rc.d` lives in the container writable layer, so `init-openwrt.sh` re-enables
+the OpenClash init script on every container start. Without this, the Mihomo core
+(and therefore the dashboard on port `9090`) stays down after a restart.
+
+`/etc/init.d/openclash enable` needs `/var/lock`, which `/sbin/init` has not
+created yet when the startup hook runs. The script therefore creates the
+directory first and falls back to writing `/etc/rc.d/S99openclash` directly.
 
 ## Troubleshooting
 

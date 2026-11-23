@@ -106,8 +106,8 @@ OpenWrt 容器拥有独立 network namespace，因此 OpenClash 的 TUN、策略
 仓库提供 `.env.example` 作为配置模板，其中包含类似下面的示例参数：
 
 ```dotenv
-OPENWRT_VERSION=25.12.5
-OPENCLASH_VERSION=0.47.156
+OPENWRT_VERSION=25.12.6
+OPENCLASH_VERSION=0.48.002
 
 OPENWRT_IP=192.168.0.250
 OPENWRT_GATEWAY=192.168.0.1
@@ -256,8 +256,8 @@ chmod +x update-openwrt-image.sh init-openwrt.sh install-host-shim.sh
 典型镜像名称：
 
 ```text
-local-openwrt-base:25.12.5
-local-openwrt:25.12.5-oc0.47.156
+local-openwrt-base:25.12.6
+local-openwrt:25.12.6-oc0.48.002
 ```
 
 构建脚本**不会自动重建正在运行的容器**。
@@ -417,8 +417,8 @@ openclash_data  -> /etc/openclash
 
 ```bash
 ./update-openwrt-image.sh \
-  --openwrt 25.12.5 \
-  --openclash 0.47.156
+  --openwrt 25.12.6 \
+  --openclash 0.48.002
 ```
 
 强制重建已经存在的最终镜像 tag：
@@ -527,6 +527,15 @@ OpenClash 版本     -> 重建镜像
 Mihomo Core        -> 更新持久化 OpenClash 数据
 Profiles/providers -> 持久化 OpenClash 数据
 ```
+
+### OpenClash 自启动
+
+`/etc/rc.d` 位于容器可写层，因此 `init-openwrt.sh` 每次容器启动都会重新启用
+OpenClash 自启动；否则容器重启后 Mihomo Core（以及 `9090` 上的面板）不会自动运行。
+
+`/etc/init.d/openclash enable` 依赖 `/var/lock`，而该目录由 `/sbin/init` 创建，
+启动钩子执行时尚未存在。因此脚本会先创建该目录，并在必要时直接写入
+`/etc/rc.d/S99openclash`。
 
 ## 常见问题
 
